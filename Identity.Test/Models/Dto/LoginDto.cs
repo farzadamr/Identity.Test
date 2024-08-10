@@ -12,6 +12,6 @@ namespace Identity.Test.Models.Dto
 
         [Display(Name = "Remmember Me")]
         public bool isPersistent { get; set; } = false;
-        
+        public string ReturnUrl { get; set; }
     }
 }

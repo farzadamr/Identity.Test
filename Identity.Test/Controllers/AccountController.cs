@@ -55,9 +55,12 @@ namespace Identity.Test.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login(string ReturnUrl)
+        public IActionResult Login(string ReturnUrl ="/")
         {
-            return View();
+            return View(new LoginDto()
+            {
+                ReturnUrl = ReturnUrl,
+            });
         }
         [HttpPost]
         public IActionResult Login(LoginDto login)
@@ -66,10 +69,32 @@ namespace Identity.Test.Controllers
             {
                 return View(login);
             }
+
+            _signInManager.SignOutAsync();
             var user = _userManager.FindByNameAsync(login.UserName).Result;
-            _signInManager.PasswordSignInAsync(user, login.Password, login.isPersistent, true);
+            var Result = _signInManager.PasswordSignInAsync(user, login.Password, login.isPersistent, true).Result;
+            if (Result.Succeeded)
+            {
+                return Redirect(login.ReturnUrl);
+            }
+            if (Result.IsLockedOut)
+            {
+                //
+            }
+            if (Result.RequiresTwoFactor)
+            {
+                //
+            }
+            ModelState.AddModelError(string.Empty, "Login Error");
+
 
             return View();
+        }
+
+        public IActionResult Logout()
+        {
+            _signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
         }
     }
 }

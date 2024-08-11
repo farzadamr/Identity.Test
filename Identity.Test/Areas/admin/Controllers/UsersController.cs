@@ -28,5 +28,42 @@ namespace Identity.Test.Areas.admin.Controllers
 
             return View(Users);
         }
+        [HttpGet]
+        public IActionResult Create() 
+        { 
+
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Create(CreateUserDto register)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(register);
+            }
+            User newUser = new User()
+            {    
+                UserName = register.UserName,   
+                FirstName = register.FirstName,
+                LastName = register.LastName,
+            };
+            var result = _userManager.CreateAsync(newUser, register.Password).Result;
+            if (result.Succeeded)
+            {
+                return RedirectToAction("index", "users");
+            }
+
+            string message = "";
+            foreach (var item in result.Errors.ToList())
+            {
+                message += item.Description + Environment.NewLine;
+            }
+
+            TempData["Message"] = message;
+            return View(register);
+
+
+        }
     }
 }

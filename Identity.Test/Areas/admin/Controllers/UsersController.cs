@@ -2,6 +2,7 @@
 using Identity.Test.Models.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace Identity.Test.Areas.admin.Controllers
 {
@@ -62,8 +63,71 @@ namespace Identity.Test.Areas.admin.Controllers
 
             TempData["Message"] = message;
             return View(register);
-
-
         }
+        [HttpGet]
+        public IActionResult Edit(string Id)
+        {
+            var user = _userManager.FindByIdAsync(Id).Result;
+            UserEditDto userEdit = new UserEditDto()
+            {
+                UserName = user.UserName,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+            };
+            return View(userEdit);
+        }
+        [HttpPost]
+        public IActionResult Edit(UserEditDto userEdit)
+        {
+            var user = _userManager.FindByIdAsync(userEdit.Id).Result;  
+            user.UserName = userEdit.UserName;
+            user.FirstName = userEdit.FirstName;
+            user.LastName = userEdit.LastName;
+            user.Email = userEdit.Email;
+
+            var result = _userManager.UpdateAsync(user).Result;
+            if(result.Succeeded)
+            {
+                return RedirectToAction("index", "users", new { area = "admin" });
+            }
+            string Message = "";
+            foreach(var item in result.Errors.ToList())
+            {
+                Message += item.Description + Environment.NewLine;
+            }
+            TempData["Message"] = Message;
+            return View(userEdit);
+        }
+        public IActionResult Delete(string Id)
+        {
+            var user = _userManager.FindByIdAsync(Id).Result;
+            UserDeleteDto userDelete = new UserDeleteDto()
+            {
+                UserName = user.UserName,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+            };
+            return View(userDelete);
+        }
+        [HttpPost]
+        public IActionResult Delete(UserDeleteDto userDelete)
+        {
+            var user = _userManager.FindByIdAsync(userDelete.Id).Result;
+            var result = _userManager.DeleteAsync(user).Result;
+            if (result.Succeeded)
+            {
+                return RedirectToAction("Index","Users",new {area="admin" });
+            }
+            string Message = "";
+            foreach(var item in result.Errors.ToList())
+            {
+                Message += item.Description + Environment.NewLine;
+            }
+            TempData["Message"] = Message;
+            return View(userDelete);
+        }
+
     }
 }

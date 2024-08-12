@@ -72,19 +72,23 @@ namespace Identity.Test.Controllers
 
             _signInManager.SignOutAsync();
             var user = _userManager.FindByNameAsync(login.UserName).Result;
-            var Result = _signInManager.PasswordSignInAsync(user, login.Password, login.isPersistent, true).Result;
-            if (Result.Succeeded)
+            if (user != null)
             {
-                return Redirect(login.ReturnUrl);
+                var Result = _signInManager.PasswordSignInAsync(user, login.Password, login.isPersistent, true).Result;
+                if (Result.Succeeded)
+                {
+                    return Redirect(login.ReturnUrl);
+                }
+                if (Result.IsLockedOut)
+                {
+                    //
+                }
+                if (Result.RequiresTwoFactor)
+                {
+                    //
+                }
             }
-            if (Result.IsLockedOut)
-            {
-                //
-            }
-            if (Result.RequiresTwoFactor)
-            {
-                //
-            }
+
             ModelState.AddModelError(string.Empty, "Login Error");
 
 

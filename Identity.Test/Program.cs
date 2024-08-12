@@ -1,4 +1,5 @@
 using Identity.Test.Data;
+using Identity.Test.Helper;
 using Identity.Test.Models.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,9 +12,11 @@ builder.Services.AddControllersWithViews();
 var ConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<DatabaseContext>(p => p.UseSqlServer(ConnectionString));
 
+// Confige Identity
 builder.Services.AddIdentity<User, Role>()
     .AddEntityFrameworkStores<DatabaseContext>()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddErrorDescriber<CustomIdentityError>();
 
 var app = builder.Build();
 

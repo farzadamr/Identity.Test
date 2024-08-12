@@ -2,6 +2,7 @@
 using Identity.Test.Models.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Diagnostics;
 
 namespace Identity.Test.Areas.admin.Controllers
@@ -10,9 +11,11 @@ namespace Identity.Test.Areas.admin.Controllers
     public class UsersController : Controller
     {
         private readonly UserManager<User> _userManager;
-        public UsersController(UserManager<User> userManager)
+        private readonly RoleManager<Role> _roleManager;
+        public UsersController(UserManager<User> userManager, RoleManager<Role> roleManager)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
         }
         public IActionResult Index()
         {
@@ -127,6 +130,32 @@ namespace Identity.Test.Areas.admin.Controllers
             }
             TempData["Message"] = Message;
             return View(userDelete);
+        }
+         public IActionResult AddUserRoles(string Id)
+        {
+            var user = _userManager.FindByIdAsync(Id).Result;
+
+            var roles = new List<SelectListItem>(
+                _roleManager.Roles.Select(p=> new SelectListItem
+                {
+                    Text = p.Name,
+                    Value = p.Name
+                })).ToList();
+            return View(new AddUserRoleDto()
+            {
+                Id = Id,
+                Roles = roles,
+                UserName = user.UserName,
+                FullName = $"{user.FirstName} {user.LastName}"
+            });
+
+        }
+        [HttpPost]
+        public IActionResult AddUserRoles(AddUserRoleDto userRole)
+        {
+            var user = _userManager.FindByIdAsync(userRole.Id).Result;
+            var result = _userManager.AddToRoleAsync(user, userRole.Role).Result;
+            return RedirectToAction("Index", "users", new { area = "admin" });
         }
 
     }
